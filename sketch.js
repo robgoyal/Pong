@@ -22,8 +22,23 @@ function setup() {
 function draw() {
     
     background(0);
-    ellipse(circle.x, circle.y, circle.diameter, circle.diameter);
     
+    drawBall();
+    bounceBall();
+    moveBall();
+
+}
+function drawBall() {
+    stroke('black');
+    ellipse(circle.x, circle.y, circle.diameter, circle.diameter);
+}
+
+function moveBall() {
+    circle.x += circle.xSpeed;
+    circle.y += circle.ySpeed;
+}
+
+function bounceBall() {
     if (circle.x < (0 + circle.diameter/2) || 
             circle.x > (CANVAS_WIDTH - circle.diameter/2)) {
         circle.xSpeed = -circle.xSpeed;
@@ -33,9 +48,4 @@ function draw() {
             circle.y > (CANVAS_HEIGHT - circle.diameter/2)) {
         circle.ySpeed = -circle.ySpeed;
     }
-    
-    
-    circle.x += circle.xSpeed;
-    circle.y += circle.ySpeed;
-
 }
