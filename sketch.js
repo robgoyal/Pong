@@ -39,8 +39,8 @@ var opponent_paddle = {
 // Setup canvas and ball speed
 function setup() {
     createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
-    circle.xSpeed = random(-3, 3);
-    circle.ySpeed = random(-3, 3);
+    circle.xSpeed = random(-4, 4);
+    circle.ySpeed = random(-2, 2);
 }
 
 // Draw function
@@ -113,14 +113,22 @@ function moveBall() {
 // Ball bounce
 function bounceBall() {
     
-    // Check for horizontal 
+    // Horizontal conditions
     if (circle.x < (user_paddle.x + user_paddle.width/2 + circle.diameter/2) || 
-            circle.x > (opponent_paddle.x - opponent_paddle.width + 
+            circle.x > (opponent_paddle.x - opponent_paddle.width/2 -
             circle.diameter/2)) { 
         
-        hitPaddle();
+        
+        if (hitPaddle()) {
+            circle.xSpeed = -circle.xSpeed;
+        }
+        else {
+            pause();
+        }
+
     }
     
+    // Vertical conditions
     if (circle.y < (0 + circle.diameter/2) || 
             circle.y > (CANVAS_HEIGHT - circle.diameter/2)) {
         circle.ySpeed = -circle.ySpeed;
@@ -128,18 +136,26 @@ function bounceBall() {
     
 }
 
+function pause() {
+    circle.x = CANVAS_WIDTH/2;
+    circle.y = CANVAS_HEIGHT/2;
+    circle.xSpeed = random(-4, 4);
+    circle.ySpeed = random(-2, 2);
+    redraw();
+}
+
 function hitPaddle() {
     
     // Bounce ball if hit user paddle
     if (circle.y < (user_paddle.y + user_paddle.height/2) &&
             circle.y > (user_paddle.y - user_paddle.height/2)) {
-        circle.xSpeed = -circle.xSpeed;
+        return true;
     }
     
     // Bounce ball if hit opponent paddle
     if (circle.y < (opponent_paddle.y + opponent_paddle.height/2) &&
             circle.y > (opponent_paddle.y - opponent_paddle.height/2)) {
-        circle.xSpeed = -circle.xSpeed;
+        return true;
     }
 }
 
