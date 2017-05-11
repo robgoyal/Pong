@@ -1,14 +1,21 @@
 /* Name: Pong
    Author: Robin Goyal
-   Last Modified: May 9, 2017
+   Last Modified: May 11, 2017
+   Purpose: Pong game from scratch to learn about p5.js
    Usage: Run sketch.js and two clients must connect to localhost
+   Notes: Occasionally buggy
 */
 
 // Canvas parameters
+var canvas;
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 400;
 
-// Circle object parameters
+// Score variables;
+var userScore = 0;
+var opponentScore = 0;
+
+// Object parameters for ball
 var circle = {
     x: CANVAS_WIDTH/2,
     y: CANVAS_HEIGHT/2,
@@ -35,52 +42,49 @@ var opponent_paddle = {
     ySpeed: 3
 }
 
-
 // Setup canvas and ball speed
 function setup() {
-    createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+    canvas = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+    canvas.position(250, 150);
+    // Randomly choose ball speeds
     circle.xSpeed = random(-4, 4);
     circle.ySpeed = random(-2, 2);
 }
 
 // Draw function
 function draw() {
-    
     // Create white background
     background(0);
     
-    // Modular functions
+    // Call functions
     drawPaddle();
     movePaddle();
-    drawBall();
+    showBall();
     bounceBall();
-    moveBall();
-
+    console.log("Ball: " + (circle.y + circle.diameter/2) + "\nPaddle: " + opponent_paddle.y);
 }
 
-
+// NOT COMPLETED
 function movePaddle() {
     
-    if ((user_paddle.y) > CANVAS_HEIGHT) {
+    if ((user_paddle.y) > (CANVAS_HEIGHT - user_paddle.height/2)) {
         user_paddle.ySpeed = 0;
     }
     
-    else {
-        if (keyIsDown(DOWN_ARROW)) {
-            user_paddle.y += user_paddle.ySpeed;
-        }
-    
-        else if (keyIsDown(UP_ARROW)) {
-            user_paddle.y -= user_paddle.ySpeed;
-        }   
+    if (keyIsDown(DOWN_ARROW)) {
+        user_paddle.y += user_paddle.ySpeed;
     }
+
+    else if (keyIsDown(UP_ARROW)) {
+        user_paddle.y -= user_paddle.ySpeed;
+    }   
     
     if (keyIsDown(87)) {
-        opponent_paddle.y += opponent_paddle.ySpeed;
+        opponent_paddle.y -= opponent_paddle.ySpeed;
     }
     
     else if (keyIsDown(83)) {
-        opponent_paddle.y -= opponent_paddle.ySpeed;
+        opponent_paddle.y += opponent_paddle.ySpeed;
     }
     
 }
@@ -91,33 +95,54 @@ function drawPaddle() {
     
     // User paddle
     rect(user_paddle.x, user_paddle.y, user_paddle.width, user_paddle.height);
-    
     // Opponent paddle
     rect(opponent_paddle.x, opponent_paddle.y, 
          opponent_paddle.width, opponent_paddle.height);
 }
 
 // COMPLETED
-function drawBall() {
+function showBall() {
+    // Draw ball
     fill(255);
     stroke('black');
     ellipse(circle.x, circle.y, circle.diameter, circle.diameter);
-}
-
-// COMPLETED
-function moveBall() {
+    
+    // Update ball location
     circle.x += circle.xSpeed;
     circle.y += circle.ySpeed;
 }
 
-// Ball bounce
+// COMPLETED
+function hitPaddle() {
+    
+    // Bounce ball if hit user paddle
+    if ((circle.y - circle.diameter/2) < (user_paddle.y + user_paddle.height/2) &&
+            (circle.y + circle.diameter/2) > (user_paddle.y - user_paddle.height/2)) {
+        return true;
+    }
+    else {
+        opponentScore += 1;
+        return false
+    }
+    
+    // Bounce ball if hit opponent paddle
+    if ((circle.y - circle.diameter/2) < (opponent_paddle.y + opponent_paddle.height/2) &&
+            (circle.y + circle.diameter/2) > (opponent_paddle.y - opponent_paddle.height/2)) {
+        return true;
+    }
+    else {
+        userScore += 1;
+        return false;
+    }
+}
+
+//
 function bounceBall() {
     
     // Horizontal conditions
     if (circle.x < (user_paddle.x + user_paddle.width/2 + circle.diameter/2) || 
             circle.x > (opponent_paddle.x - opponent_paddle.width/2 -
             circle.diameter/2)) { 
-        
         
         if (hitPaddle()) {
             circle.xSpeed = -circle.xSpeed;
@@ -144,18 +169,4 @@ function pause() {
     redraw();
 }
 
-function hitPaddle() {
-    
-    // Bounce ball if hit user paddle
-    if (circle.y < (user_paddle.y + user_paddle.height/2) &&
-            circle.y > (user_paddle.y - user_paddle.height/2)) {
-        return true;
-    }
-    
-    // Bounce ball if hit opponent paddle
-    if (circle.y < (opponent_paddle.y + opponent_paddle.height/2) &&
-            circle.y > (opponent_paddle.y - opponent_paddle.height/2)) {
-        return true;
-    }
-}
 
