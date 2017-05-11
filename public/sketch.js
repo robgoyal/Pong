@@ -2,8 +2,8 @@
    Author: Robin Goyal
    Last Modified: May 11, 2017
    Purpose: Pong game from scratch to learn about p5.js
-   Usage: Run sketch.js and two clients must connect to localhost
-   Notes: Occasionally buggy
+   Usage: Open the html file or sketch.js file.
+          Use W and S to move left paddle, UP and DOWN arrow keys to move right
 */
 
 // Canvas parameters
@@ -57,39 +57,64 @@ function draw() {
     background(0);
     
     // Call functions
-    drawPaddle();
-    movePaddle();
+    drawScore();
+    drawPaddles();
+    moveUserPaddle();
+    moveOpponentPaddle();
     showBall();
     bounceBall();
-    console.log("Ball: " + (circle.y + circle.diameter/2) + "\nPaddle: " + opponent_paddle.y);
+    console.log("Ball: " + (circle.y + circle.diameter/2) + "\nPaddle: " + user_paddle.y);
 }
 
-// NOT COMPLETED
-function movePaddle() {
-    
-    if ((user_paddle.y) > (CANVAS_HEIGHT - user_paddle.height/2)) {
-        user_paddle.ySpeed = 0;
-    }
-    
-    if (keyIsDown(DOWN_ARROW)) {
-        user_paddle.y += user_paddle.ySpeed;
-    }
+// Draw score text at center top of canvas
+function drawScore() {
+    textSize(24);
+    textAlign(CENTER, TOP);
+    textStyle(BOLD);
+    fill(255);
+    text(userScore + "  " + opponentScore, CANVAS_WIDTH/2, 5);
+}
 
-    else if (keyIsDown(UP_ARROW)) {
-        user_paddle.y -= user_paddle.ySpeed;
-    }   
-    
-    if (keyIsDown(87)) {
+function moveOpponentPaddle() {
+    // Increases paddle movement based off paddle speed
+    if (keyIsDown(UP_ARROW)) {
         opponent_paddle.y -= opponent_paddle.ySpeed;
     }
     
-    else if (keyIsDown(83)) {
+    else if (keyIsDown(DOWN_ARROW)) {
         opponent_paddle.y += opponent_paddle.ySpeed;
     }
     
+    // Check if opponent is trying to push paddle beyond canvas bounds
+    if ((opponent_paddle.y) > (CANVAS_HEIGHT - opponent_paddle.height/2)) {
+        opponent_paddle.y = CANVAS_HEIGHT - opponent_paddle.height/2;
+    }
+    else if (opponent_paddle.y < opponent_paddle.height/2) {
+        opponent_paddle.y = opponent_paddle.height/2;
+    }
 }
 
-function drawPaddle() {
+function moveUserPaddle() {
+    // Increases paddle movement based off paddle speed
+    if (keyIsDown(83)) {
+        user_paddle.y += user_paddle.ySpeed;
+    }
+
+    else if (keyIsDown(87)) {
+        user_paddle.y -= user_paddle.ySpeed;
+    }   
+    
+    // Check if user is trying to push paddle beyond canvas bounds
+    if ((user_paddle.y) > (CANVAS_HEIGHT - user_paddle.height/2)) {
+        user_paddle.y = CANVAS_HEIGHT - user_paddle.height/2;
+    }
+    else if (user_paddle.y < user_paddle.height/2) {
+        user_paddle.y = user_paddle.height/2;
+    }
+}
+
+// COMPLETED
+function drawPaddles() {
     fill(255);
     rectMode(CENTER);
     
@@ -110,63 +135,76 @@ function showBall() {
     // Update ball location
     circle.x += circle.xSpeed;
     circle.y += circle.ySpeed;
+    
 }
 
-// COMPLETED
-function hitPaddle() {
+function bounceBall() {
     
-    // Bounce ball if hit user paddle
-    if ((circle.y - circle.diameter/2) < (user_paddle.y + user_paddle.height/2) &&
-            (circle.y + circle.diameter/2) > (user_paddle.y - user_paddle.height/2)) {
+    // Check if ball location was past paddles in horizontal direction
+    userPaddleCheck = circle.x < (user_paddle.x + user_paddle.width/2 + circle.diameter/2);
+    oppPaddleCheck = circle.x > (opponent_paddle.x - opponent_paddle.width/2 - circle.diameter/2);
+    
+    // Nested conditional to check if ball hit user paddle, otherwise point score
+    if (userPaddleCheck) { 
+        if (hitUserPaddle()) {
+            circle.xSpeed = -circle.xSpeed;
+        }
+        else {
+            pointScore();
+        }
+    }
+    
+    // Next condition to check if ball hit opponent paddle
+    if (oppPaddleCheck) {
+        if (hitOpponentPaddle()) {
+            circle.xSpeed = -circle.xSpeed;
+        }
+        else {
+            pointScore();
+        }
+    }
+
+    // Check if ball hit top or bottom wall
+    if (circle.y < (0 + circle.diameter/2) || 
+            circle.y > (CANVAS_HEIGHT - circle.diameter/2)) {
+        circle.ySpeed = -circle.ySpeed;
+    }   
+}
+
+function hitUserPaddle() {
+    // Check if ball is within user paddle location range
+    userTopBound = (circle.y - circle.diameter/2) < (user_paddle.y + user_paddle.height/2);
+    userBotBound = (circle.y + circle.diameter/2) > (user_paddle.y - user_paddle.height/2);
+    
+    // If ball hit user paddle return, otherwise increase opponent score
+    if (userTopBound && userBotBound) {
         return true;
     }
     else {
         opponentScore += 1;
-        return false
     }
+}
+
+function hitOpponentPaddle() {
+    // Check if ball is within opponent paddle location range
+    oppTopBound = (circle.y - circle.diameter/2) < (opponent_paddle.y + opponent_paddle.height/2);
+    oppBotBound = (circle.y + circle.diameter/2) > (opponent_paddle.y - opponent_paddle.height/2);
     
-    // Bounce ball if hit opponent paddle
-    if ((circle.y - circle.diameter/2) < (opponent_paddle.y + opponent_paddle.height/2) &&
-            (circle.y + circle.diameter/2) > (opponent_paddle.y - opponent_paddle.height/2)) {
+    // If ball hit opponent paddle return, otherwise increase opponent score
+    if (oppTopBound && oppBotBound) {
         return true;
     }
     else {
         userScore += 1;
-        return false;
     }
 }
 
-//
-function bounceBall() {
-    
-    // Horizontal conditions
-    if (circle.x < (user_paddle.x + user_paddle.width/2 + circle.diameter/2) || 
-            circle.x > (opponent_paddle.x - opponent_paddle.width/2 -
-            circle.diameter/2)) { 
-        
-        if (hitPaddle()) {
-            circle.xSpeed = -circle.xSpeed;
-        }
-        else {
-            pause();
-        }
-
-    }
-    
-    // Vertical conditions
-    if (circle.y < (0 + circle.diameter/2) || 
-            circle.y > (CANVAS_HEIGHT - circle.diameter/2)) {
-        circle.ySpeed = -circle.ySpeed;
-    }
-    
-}
-
-function pause() {
+// Reset ball position and speed and call draw again
+function pointScore() {
     circle.x = CANVAS_WIDTH/2;
     circle.y = CANVAS_HEIGHT/2;
     circle.xSpeed = random(-4, 4);
     circle.ySpeed = random(-2, 2);
+
     redraw();
 }
-
-
